@@ -7,6 +7,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "books")
@@ -39,10 +41,26 @@ public class Book {
 
     private String coverImageUrl;
 
-    // წიგნის მფლობელი გამომცემელი (User-ის ჩანაწერი role=PUBLISHER)
+    // წიგნის მფლობელი გამომცემელი
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "publisher_id", nullable = false)
-    private User publisher;
+    @JoinColumn(name = "publisher_profile_id", nullable = false)
+    private PublisherProfile publisher;
+
+    // ერთ წიგნს შეიძლება ჰქონდეს რამდენიმე ჟანრი (მაგ. "ფენტეზი" + "თავგადასავალი")
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "book_genres",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "genre_id")
+    )
+    private Set<Genre> genres = new HashSet<>();
+
+    /**
+     * Soft delete: გამომცემლის მიერ "წაშლილი" წიგნი კატალოგში აღარ ჩანს,
+     * მაგრამ ბაზაში რჩება, რომ ძველი Order/OrderItem ჩანაწერები არ დაირღვეს.
+     */
+    @Column(nullable = false)
+    private boolean active = true;
 
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
