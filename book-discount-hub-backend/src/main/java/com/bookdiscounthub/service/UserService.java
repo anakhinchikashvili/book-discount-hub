@@ -73,4 +73,25 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("მომხმარებელი ვერ მოიძებნა, id=" + id));
     }
+
+    /**
+     * პაროლის შეცვლა - ძველი პაროლის დადასტურების შემდეგ.
+     * ეს განზრახ ცალკეა register()-ისგან, რომ ვინმემ ტოკენით (მაგრამ ძველი
+     * პაროლის ცოდნის გარეშე) ვერ შეძლოს პაროლის შეცვლა (მაგ. მოპარული, jer
+     * ვადაუვადო session-ის შემთხვევაში).
+     */
+    @Transactional
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        User user = getById(userId);
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new IllegalArgumentException("ძველი პაროლი არასწორია");
+        }
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new IllegalArgumentException("ახალი პაროლი უნდა შეიცავდეს მინიმუმ 6 სიმბოლოს");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 }

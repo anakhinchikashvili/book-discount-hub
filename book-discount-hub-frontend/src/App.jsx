@@ -6,7 +6,8 @@ import Home from './pages/Home';
 import Cart from './pages/Cart';
 import Orders from './pages/Orders';
 import PublisherDashboard from './pages/PublisherDashboard';
-
+import AdminDashboard from './pages/AdminDashboard';
+import Profile from './pages/Profile';
 
 
 function App() {
@@ -20,6 +21,8 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/publisher-dashboard" element={<PublisherDashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </BrowserRouter>
   );

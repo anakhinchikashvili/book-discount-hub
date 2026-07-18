@@ -8,3 +8,9 @@ export const register = (data) => {
 export const login = (email, password) => {
   return axiosInstance.post('/auth/login', { email, password });
 };
+
+export const getCurrentUser = () => axiosInstance.get('/users/me');
+
+export const changePassword = (oldPassword, newPassword) => {
+  return axiosInstance.put('/users/me/password', { oldPassword, newPassword });
+};

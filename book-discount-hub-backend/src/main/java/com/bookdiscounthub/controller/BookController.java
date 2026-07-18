@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -33,14 +34,18 @@ public class BookController {
         return ResponseEntity.ok(bookService.getBookById(id));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<BookResponse>> searchBooks(@RequestParam String keyword) {
-        return ResponseEntity.ok(bookService.searchBooks(keyword));
-    }
-
-    @GetMapping("/genre/{genreId}")
-    public ResponseEntity<List<BookResponse>> getBooksByGenre(@PathVariable Long genreId) {
-        return ResponseEntity.ok(bookService.getBooksByGenre(genreId));
+    /**
+     * ერთიანი ფილტრი/ძებნა endpoint. keyword, genreId, minPrice, maxPrice, sortBy -
+     * ყველა optional-ია და ერთდროულად კომბინირებადია (მაგ. keyword="ჰარი"&maxPrice=30&sortBy=price_asc).
+     */
+    @GetMapping("/filter")
+    public ResponseEntity<List<BookResponse>> filterBooks(
+            @RequestParam(required = false) Long genreId,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String sortBy) {
+        return ResponseEntity.ok(bookService.filterBooks(genreId, minPrice, maxPrice, keyword, sortBy));
     }
 
     // ---------- Publisher Dashboard (ტოკენიდან, არა path/query param-იდან) ----------

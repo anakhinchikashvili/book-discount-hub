@@ -49,8 +49,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/books").hasRole("PUBLISHER")
                         .requestMatchers(HttpMethod.PUT, "/api/books/**").hasRole("PUBLISHER")
                         .requestMatchers(HttpMethod.DELETE, "/api/books/**").hasRole("PUBLISHER")
+                        .requestMatchers(HttpMethod.GET, "/api/books/my").hasRole("PUBLISHER")
 
-                        // დანარჩენი ყველაფერი (შეკვეთები და ა.შ.) - უბრალოდ ავტორიზებული უნდა იყოს
+                        // შეკვეთის გაფორმება/ისტორია - მხოლოდ USER (მყიდველი)
+                        .requestMatchers(HttpMethod.POST, "/api/orders").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/orders/my").hasRole("USER")
+
+                        // Publisher-ის საკუთარი გაყიდვების ნახვა - მხოლოდ PUBLISHER
+                        .requestMatchers(HttpMethod.GET, "/api/orders/publisher/my").hasRole("PUBLISHER")
+
+                        // დანარჩენი ყველაფერი - უბრალოდ ავტორიზებული უნდა იყოს
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

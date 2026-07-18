@@ -7,10 +7,13 @@ import { useCart } from '../context/CartContext';
  * Navbar კომპონენტი - auth მდგომარეობა AuthContext-იდან, კალათის რაოდენობა CartContext-იდან.
  */
 function Navbar() {
-  const { isAuthenticated, isPublisher, user, logout } = useAuth();
+  const { isAuthenticated, isPublisher, isAdmin, user, logout } = useAuth();
   const { itemCount } = useCart();
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
+
+  // Publisher/Admin ანგარიშები არ არიან მყიდველები - მათთვის Cart/Wishlist აზრს კარგავს
+  const isBuyer = !isPublisher && !isAdmin;
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -77,23 +80,35 @@ function Navbar() {
               </li>
             )}
 
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/wishlist">
-                <i className="bi bi-heart"></i> Wishlist
-              </NavLink>
-            </li>
+            {isAdmin && (
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/admin">
+                  Admin Dashboard
+                </NavLink>
+              </li>
+            )}
 
-            <li className="nav-item">
-              <NavLink className="nav-link position-relative" to="/cart">
-                <i className="bi bi-cart"></i> კალათა
-                {itemCount > 0 && (
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    {itemCount}
-                    <span className="visually-hidden">ნივთი კალათაში</span>
-                  </span>
-                )}
-              </NavLink>
-            </li>
+            {isBuyer && (
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/wishlist">
+                  <i className="bi bi-heart"></i> Wishlist
+                </NavLink>
+              </li>
+            )}
+
+            {isBuyer && (
+              <li className="nav-item">
+                <NavLink className="nav-link position-relative" to="/cart">
+                  <i className="bi bi-cart"></i> კალათა
+                  {itemCount > 0 && (
+                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                      {itemCount}
+                      <span className="visually-hidden">ნივთი კალათაში</span>
+                    </span>
+                  )}
+                </NavLink>
+              </li>
+            )}
 
             {isAuthenticated ? (
               <li className="nav-item dropdown">
@@ -108,10 +123,17 @@ function Navbar() {
                 </a>
                 <ul className="dropdown-menu dropdown-menu-end">
                   <li>
-                    <Link className="dropdown-item" to="/orders">
-                      ჩემი შეკვეთები
+                    <Link className="dropdown-item" to="/profile">
+                      პროფილი
                     </Link>
                   </li>
+                  {isBuyer && (
+                    <li>
+                      <Link className="dropdown-item" to="/orders">
+                        ჩემი შეკვეთები
+                      </Link>
+                    </li>
+                  )}
                   <li>
                     <hr className="dropdown-divider" />
                   </li>

@@ -5,7 +5,7 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
-
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 
 createRoot(document.getElementById('root')).render(

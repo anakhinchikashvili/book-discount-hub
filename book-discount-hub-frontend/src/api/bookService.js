@@ -6,10 +6,8 @@ export const getAllBooks = () => axiosInstance.get('/books');
 
 export const getBookById = (id) => axiosInstance.get(`/books/${id}`);
 
-export const searchBooks = (keyword) =>
-  axiosInstance.get('/books/search', { params: { keyword } });
-
-export const getBooksByGenre = (genreId) => axiosInstance.get(`/books/genre/${genreId}`);
+// params: { genreId, minPrice, maxPrice, keyword, sortBy } - ყველა optional-ია, ერთდროულად კომბინირებადია
+export const filterBooks = (params) => axiosInstance.get('/books/filter', { params });
 
 // ---------- Publisher Dashboard (ტოკენი აუცილებელია) ----------
 

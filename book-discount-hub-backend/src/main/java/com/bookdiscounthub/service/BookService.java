@@ -10,9 +10,12 @@ import com.bookdiscounthub.repository.BookRepository;
 import com.bookdiscounthub.repository.GenreRepository;
 import com.bookdiscounthub.repository.PublisherProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,14 +49,25 @@ public class BookService {
         return BookResponse.fromEntity(book);
     }
 
-    public List<BookResponse> searchBooks(String keyword) {
-        return bookRepository.searchByKeyword(keyword).stream()
-                .map(BookResponse::fromEntity)
-                .collect(Collectors.toList());
-    }
+    /**
+     * ერთიანი ფილტრი/ძებნა/სორტირება. keyword, genreId, minPrice, maxPrice - ყველა optional-ია
+     * და ერთდროულად კომბინირებადია. sortBy: "price_asc" | "price_desc" | "discount_desc" | "newest" (default).
+     * price_asc/price_desc საბოლოო (ფასდაკლებული) ფასის მიხედვით სორტირებს, იმავე
+     * ფორმულით რაც ფასის ფილტრშია - JpaSort.unsafe() საჭირო იყო, რადგან ჩვეულებრივი
+     * Sort მხოლოდ პირდაპირ entity ველებზე მუშაობს, არა computed expression-ზე.
+     */
+    public List<BookResponse> filterBooks(Long genreId, BigDecimal minPrice, BigDecimal maxPrice,
+                                          String keyword, String sortBy) {
+        Sort sort = switch (sortBy != null ? sortBy : "newest") {
+            case "price_asc" -> JpaSort.unsafe(Sort.Direction.ASC, "(price * (1 - discountPercentage / 100.0))");
+            case "price_desc" -> JpaSort.unsafe(Sort.Direction.DESC, "(price * (1 - discountPercentage / 100.0))");
+            case "discount_desc" -> Sort.by(Sort.Direction.DESC, "discountPercentage");
+            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+        };
 
-    public List<BookResponse> getBooksByGenre(Long genreId) {
-        return bookRepository.findByGenres_IdAndActiveTrue(genreId).stream()
+        String normalizedKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+
+        return bookRepository.filterBooks(genreId, minPrice, maxPrice, normalizedKeyword, sort).stream()
                 .map(BookResponse::fromEntity)
                 .collect(Collectors.toList());
     }
