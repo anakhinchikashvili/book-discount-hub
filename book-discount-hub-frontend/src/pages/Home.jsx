@@ -4,16 +4,17 @@ import { filterBooks } from '../api/bookService';
 import BookCard from '../components/BookCard';
 import FilterBar from '../components/FilterBar';
 
+const BOOKS_PER_PAGE = 12;
+
 function Home() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get('q');
 
-  // keyword მხოლოდ URL-იდან (Navbar-ის ძებნა) მოდის - FilterBar-ს საკუთარი
-  // keyword-input აღარ აქვს, ამიტომ ის ყოველ ჯერზე ხელით ვურთავთ ფილტრის პარამეტრებს
   useEffect(() => {
     runFilter({ genreId: null, minPrice: null, maxPrice: null, sortBy: 'newest' });
   }, [keyword]);
@@ -21,6 +22,7 @@ function Home() {
   const runFilter = async (filtersWithoutKeyword) => {
     setLoading(true);
     setError('');
+    setCurrentPage(1); // ახალი ფილტრი/ძებნა ყოველთვის პირველ გვერდზე იწყება
     try {
       const response = await filterBooks({ ...filtersWithoutKeyword, keyword: keyword || null });
       setBooks(response.data);
@@ -29,6 +31,15 @@ function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const totalPages = Math.ceil(books.length / BOOKS_PER_PAGE);
+  const startIndex = (currentPage - 1) * BOOKS_PER_PAGE;
+  const visibleBooks = books.slice(startIndex, startIndex + BOOKS_PER_PAGE);
+
+  const goToPage = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // ახალ გვერდზე ზემოთ დაბრუნება
   };
 
   return (
@@ -50,10 +61,36 @@ function Home() {
           )}
 
           <div className="row">
-            {books.map((book) => (
+            {visibleBooks.map((book) => (
               <BookCard key={book.id} book={book} />
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <nav className="d-flex justify-content-center mt-4">
+              <ul className="pagination">
+                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => goToPage(currentPage - 1)}>
+                    წინა
+                  </button>
+                </li>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
+                    <button className="page-link" onClick={() => goToPage(page)}>
+                      {page}
+                    </button>
+                  </li>
+                ))}
+
+                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => goToPage(currentPage + 1)}>
+                    შემდეგი
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          )}
         </>
       )}
     </div>

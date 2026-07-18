@@ -214,43 +214,48 @@ function PublisherDashboard() {
           {orders.length === 0 ? (
             <p className="text-muted">ჯერ არცერთი შეკვეთა არ დაგფიქსირებია.</p>
           ) : (
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th>წიგნი</th>
-                  <th>რაოდენობა</th>
-                  <th>ფასი (შესყიდვისას)</th>
-                  <th>ჯამი</th>
-                  <th>სტატუსი</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.bookTitle}</td>
-                    <td>{item.quantity}</td>
-                    <td>{item.priceAtPurchase.toFixed(2)} ₾</td>
-                    <td className="fw-bold">
-                      {(item.priceAtPurchase * item.quantity).toFixed(2)} ₾
-                    </td>
-                    <td>
-                      <select
-                        className="form-select form-select-sm"
-                        style={{ width: '160px' }}
-                        value={item.status}
-                        onChange={(e) => handleStatusChange(item.id, e.target.value)}
-                      >
-                        <option value="PENDING">მიმდინარეობს დამუშავება</option>
-                        <option value="CONFIRMED">დადასტურებულია</option>
-                        <option value="SHIPPED">გზაშია</option>
-                        <option value="DELIVERED">მიწოდებულია</option>
-                        <option value="CANCELLED">გაუქმებულია</option>
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="d-flex flex-column gap-3">
+              {orders.map((item) => (
+                <div key={item.id} className="card">
+                  <div className="card-body">
+                    <div className="row g-3 align-items-start">
+                      <div className="col-md-4">
+                        <h6 className="mb-1">{item.bookTitle}</h6>
+                        <p className="text-muted small mb-0">
+                          {item.quantity} ცალი · {item.priceAtPurchase.toFixed(2)} ₾/ცალი
+                        </p>
+                        <p className="fw-bold mb-0">
+                          ჯამი: {(item.priceAtPurchase * item.quantity).toFixed(2)} ₾
+                        </p>
+                      </div>
+
+                      <div className="col-md-5">
+                        <p className="text-muted small mb-1 text-uppercase" style={{ fontSize: '0.7rem', letterSpacing: '0.05em' }}>
+                          მყიდველი
+                        </p>
+                        <p className="mb-1">{item.buyerName}</p>
+                        <p className="text-muted small mb-0">{item.shippingAddress}</p>
+                      </div>
+
+                      <div className="col-md-3">
+                        <label className="form-label small text-muted mb-1">სტატუსი</label>
+                        <select
+                          className="form-select form-select-sm"
+                          value={item.status}
+                          onChange={(e) => handleStatusChange(item.id, e.target.value)}
+                        >
+                          <option value="PENDING">მიმდინარეობს დამუშავება</option>
+                          <option value="CONFIRMED">დადასტურებულია</option>
+                          <option value="SHIPPED">გზაშია</option>
+                          <option value="DELIVERED">მიწოდებულია</option>
+                          <option value="CANCELLED">გაუქმებულია</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </>
       )}

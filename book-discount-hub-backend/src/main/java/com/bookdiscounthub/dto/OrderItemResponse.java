@@ -17,6 +17,8 @@ public class OrderItemResponse {
     private Integer quantity;
     private BigDecimal priceAtPurchase;
     private OrderStatus status;
+    private String shippingAddress;
+    private String buyerName;
 
     public static OrderItemResponse fromEntity(OrderItem item) {
         OrderItemResponse dto = new OrderItemResponse();
@@ -27,6 +29,8 @@ public class OrderItemResponse {
         dto.setQuantity(item.getQuantity());
         dto.setPriceAtPurchase(item.getPriceAtPurchase());
         dto.setStatus(item.getStatus());
+        dto.setShippingAddress(item.getOrder().getShippingAddress());
+        dto.setBuyerName(item.getOrder().getUser().getFullName());
         return dto;
     }
 }

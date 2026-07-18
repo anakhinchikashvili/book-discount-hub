@@ -48,7 +48,7 @@ function FilterBar({ onApply }) {
   return (
     <form onSubmit={handleApply} className="card card-body mb-4">
       <div className="row g-3">
-        <div className="col-md-3">
+        <div className="col-md-4">
           <label className="form-label small">ჟანრი</label>
           <select
             className="form-select"
@@ -88,7 +88,7 @@ function FilterBar({ onApply }) {
           />
         </div>
 
-        <div className="col-md-3">
+        <div className="col-md-4">
           <label className="form-label small">დალაგება</label>
           <select
             className="form-select"

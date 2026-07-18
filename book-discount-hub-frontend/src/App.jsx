@@ -8,6 +8,7 @@ import Orders from './pages/Orders';
 import PublisherDashboard from './pages/PublisherDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
+import BookDetail from './pages/BookDetail'; 
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path="/publisher-dashboard" element={<PublisherDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/books/:id" element={<BookDetail />} />
       </Routes>
     </BrowserRouter>
   );
