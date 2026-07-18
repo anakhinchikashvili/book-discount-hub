@@ -2,21 +2,15 @@ package com.bookdiscounthub.controller;
 
 import com.bookdiscounthub.dto.BookRequest;
 import com.bookdiscounthub.dto.BookResponse;
+import com.bookdiscounthub.security.CustomUserDetails;
 import com.bookdiscounthub.service.BookService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * ⚠️ დროებითი შენიშვნა: publisherUserId ჯერ query param-ით მოდის კლიენტიდან,
- * რადგან JWT/Security ჯერ არ გვაქვს დანერგილი (მე-5 ეტაპი).
- * ეს დროებითი და არასაიმედო გადაწყვეტაა - ნებისმიერს შეუძლია ნებისმიერი publisherUserId
- * გამოაგზავნოს და სხვისი publisher-ის სახელით იმოქმედოს.
- * JWT-ის დანერგვის შემდეგ ეს პარამეტრი მოიხსნება და publisherUserId ავტორიზებული
- * მომხმარებლის ტოკენიდან ამოვიღებთ (SecurityContext/Principal), არა request-იდან.
- */
 @RestController
 @RequestMapping("/api/books")
 public class BookController {
@@ -49,31 +43,31 @@ public class BookController {
         return ResponseEntity.ok(bookService.getBooksByGenre(genreId));
     }
 
-    // ---------- Publisher Dashboard ----------
+    // ---------- Publisher Dashboard (ტოკენიდან, არა path/query param-იდან) ----------
 
-    @GetMapping("/publisher/{publisherUserId}")
-    public ResponseEntity<List<BookResponse>> getMyBooks(@PathVariable Long publisherUserId) {
-        return ResponseEntity.ok(bookService.getBooksByPublisher(publisherUserId));
+    @GetMapping("/my")
+    public ResponseEntity<List<BookResponse>> getMyBooks(@AuthenticationPrincipal CustomUserDetails principal) {
+        return ResponseEntity.ok(bookService.getBooksByPublisher(principal.getId()));
     }
 
     @PostMapping
-    public ResponseEntity<BookResponse> createBook(@RequestParam Long publisherUserId,
+    public ResponseEntity<BookResponse> createBook(@AuthenticationPrincipal CustomUserDetails principal,
                                                    @RequestBody BookRequest request) {
-        BookResponse created = bookService.createBook(publisherUserId, request);
+        BookResponse created = bookService.createBook(principal.getId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<BookResponse> updateBook(@PathVariable Long id,
-                                                   @RequestParam Long publisherUserId,
+                                                   @AuthenticationPrincipal CustomUserDetails principal,
                                                    @RequestBody BookRequest request) {
-        return ResponseEntity.ok(bookService.updateBook(id, publisherUserId, request));
+        return ResponseEntity.ok(bookService.updateBook(id, principal.getId(), request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id,
-                                           @RequestParam Long publisherUserId) {
-        bookService.deleteBook(id, publisherUserId);
+                                           @AuthenticationPrincipal CustomUserDetails principal) {
+        bookService.deleteBook(id, principal.getId());
         return ResponseEntity.noContent().build();
     }
 }
