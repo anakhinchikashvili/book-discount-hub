@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 
 /**
  * Navbar კომპონენტი - auth მდგომარეობა AuthContext-იდან, კალათის რაოდენობა CartContext-იდან.
@@ -9,6 +10,7 @@ import { useCart } from '../context/CartContext';
 function Navbar() {
   const { isAuthenticated, isPublisher, isAdmin, user, logout } = useAuth();
   const { itemCount, clearCart } = useCart();
+  const { clearWishlist } = useWishlist(); 
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
@@ -24,7 +26,8 @@ function Navbar() {
 
   const handleLogout = () => {
     logout();
-    clearCart(); // მომდევნო მომხმარებელს წინას კალათა არ დაუნახოს იმავე ბრაუზერში
+    clearCart(); 
+    clearWishlist(); 
     setSearchTerm('');
     navigate('/');
   };

@@ -2,26 +2,41 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
 
 function BookCard({ book }) {
   const { addToCart } = useCart();
   const { isPublisher, isAdmin } = useAuth();
+  const { isInWishlist, toggleWishlist } = useWishlist(); 
   const isBuyer = !isPublisher && !isAdmin;
 
   const outOfStock = book.quantity === 0;
   const hasDiscount = book.discountPercentage > 0;
+  const inWishlist = isInWishlist(book.id);
 
   return (
     <div className="col-6 col-md-4 col-lg-3 mb-4">
       <div className="card h-100 shadow-sm">
-        <Link to={`/books/${book.id}`}>
-          <img
-            src={book.coverImageUrl || 'https://placehold.co/300x400?text=No+Cover'}
-            className="card-img-top"
-            alt={book.title}
-            style={{ height: '260px', objectFit: 'cover' }}
-          />
-        </Link>
+        <div className="position-relative">
+          <Link to={`/books/${book.id}`}>
+            <img
+              src={book.coverImageUrl || 'https://placehold.co/300x400?text=No+Cover'}
+              className="card-img-top"
+              alt={book.title}
+              style={{ height: '260px', objectFit: 'cover' }}
+            />
+          </Link>
+
+          {isBuyer && (
+            <button
+              className="btn btn-light btn-sm position-absolute top-0 end-0 m-2 rounded-circle"
+              onClick={() => toggleWishlist(book)}
+              title={inWishlist ? 'წაშლა Wishlist-იდან' : 'დამატება Wishlist-ში'}
+            >
+              <i className={`bi ${inWishlist ? 'bi-heart-fill text-danger' : 'bi-heart'}`}></i>
+            </button>
+          )}
+        </div>
 
         <div className="card-body d-flex flex-column">
           <h6 className="card-title mb-1">

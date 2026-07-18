@@ -3,10 +3,12 @@ import { useParams, Link } from 'react-router-dom';
 import { getBookById } from '../api/bookService';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext'; 
 
 function BookDetail() {
   const { id } = useParams();
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const { isPublisher, isAdmin } = useAuth();
   const isBuyer = !isPublisher && !isAdmin;
 
@@ -15,6 +17,9 @@ function BookDetail() {
   const [error, setError] = useState('');
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+
+  const inWishlist = book ? isInWishlist(book.id) : false;
+
 
   useEffect(() => {
     setLoading(true);
@@ -116,6 +121,13 @@ function BookDetail() {
               />
               <button className="btn btn-primary" onClick={handleAddToCart}>
                 {added ? 'დამატებულია ✓' : 'კალათაში დამატება'}
+              </button>
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => toggleWishlist(book)}
+                title={inWishlist ? 'წაშლა Wishlist-იდან' : 'დამატება Wishlist-ში'}
+              >
+                <i className={`bi ${inWishlist ? 'bi-heart-fill' : 'bi-heart'}`}></i>
               </button>
             </div>
           )}
