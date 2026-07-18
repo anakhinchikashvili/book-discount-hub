@@ -8,7 +8,7 @@ import { useCart } from '../context/CartContext';
  */
 function Navbar() {
   const { isAuthenticated, isPublisher, isAdmin, user, logout } = useAuth();
-  const { itemCount } = useCart();
+  const { itemCount, clearCart } = useCart();
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
@@ -18,12 +18,14 @@ function Navbar() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+      navigate(`/?q=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 
   const handleLogout = () => {
     logout();
+    clearCart(); // მომდევნო მომხმარებელს წინას კალათა არ დაუნახოს იმავე ბრაუზერში
+    setSearchTerm('');
     navigate('/');
   };
 

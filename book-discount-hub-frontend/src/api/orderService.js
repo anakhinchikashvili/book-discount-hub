@@ -9,3 +9,6 @@ export const getMyOrders = () => axiosInstance.get('/orders/my');
 
 // Publisher Dashboard-ისთვის
 export const getPublisherOrders = () => axiosInstance.get('/orders/publisher/my');
+
+export const updateOrderItemStatus = (orderItemId, status) =>
+  axiosInstance.put(`/orders/items/${orderItemId}/status`, { status });

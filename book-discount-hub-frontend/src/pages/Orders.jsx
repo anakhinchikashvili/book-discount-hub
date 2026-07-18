@@ -65,43 +65,43 @@ function Orders() {
         </div>
       )}
 
-      {orders.map((order) => {
-        const status = STATUS_LABELS[order.status] || { text: order.status, className: 'bg-secondary' };
+      {orders.map((order) => (
+        <div key={order.id} className="card mb-3">
+          <div className="card-header">
+            შეკვეთა #{order.id} · {new Date(order.orderDate).toLocaleDateString('ka-GE')}
+          </div>
 
-        return (
-          <div key={order.id} className="card mb-3">
-            <div className="card-header d-flex justify-content-between align-items-center">
-              <span>
-                შეკვეთა #{order.id} · {new Date(order.orderDate).toLocaleDateString('ka-GE')}
-              </span>
-              <span className={`badge ${status.className}`}>{status.text}</span>
-            </div>
+          <div className="card-body">
+            <p className="text-muted small mb-3">მისამართი: {order.shippingAddress}</p>
 
-            <div className="card-body">
-              <p className="text-muted small mb-3">მისამართი: {order.shippingAddress}</p>
+            {order.items.map((item) => {
+              const status = STATUS_LABELS[item.status] || { text: item.status, className: 'bg-secondary' };
 
-              {order.items.map((item, idx) => (
-                <div key={idx} className="d-flex justify-content-between border-bottom py-2">
+              return (
+                <div key={item.id} className="d-flex justify-content-between align-items-center border-bottom py-2">
                   <div>
                     <div>{item.bookTitle}</div>
                     <div className="text-muted small">
                       {item.publisherBrandName} · {item.quantity} ცალი
                     </div>
                   </div>
-                  <div className="fw-bold">
-                    {(item.priceAtPurchase * item.quantity).toFixed(2)} ₾
+                  <div className="d-flex align-items-center gap-3">
+                    <span className={`badge ${status.className}`}>{status.text}</span>
+                    <div className="fw-bold">
+                      {(item.priceAtPurchase * item.quantity).toFixed(2)} ₾
+                    </div>
                   </div>
                 </div>
-              ))}
+              );
+            })}
 
-              <div className="d-flex justify-content-between mt-3 fw-bold fs-5">
-                <span>ჯამი:</span>
-                <span>{order.totalPrice.toFixed(2)} ₾</span>
-              </div>
+            <div className="d-flex justify-content-between mt-3 fw-bold fs-5">
+              <span>ჯამი:</span>
+              <span>{order.totalPrice.toFixed(2)} ₾</span>
             </div>
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 }

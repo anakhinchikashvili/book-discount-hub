@@ -11,11 +11,11 @@ const SORT_OPTIONS = [
 /**
  * onApply(filters) - გამოძახება ხდება ღილაკზე დაჭერისას, არა ყოველ input-ცვლილებაზე,
  * რომ ყოველ სიმბოლოზე request არ გაეშვას.
- * initialKeyword - Navbar-ის საძიებო ველიდან (?q=) მოსული საწყისი მნიშვნელობა.
+ * keyword აქ განზრახ არ არის - ეს მხოლოდ Navbar-ის საძიებო ველის პასუხისმგებლობაა,
+ * Home.jsx ამ keyword-ს ცალკე ინახავს და ყველა filterBooks() request-ს ურთავს.
  */
-function FilterBar({ onApply, initialKeyword = '' }) {
+function FilterBar({ onApply }) {
   const [genres, setGenres] = useState([]);
-  const [keyword, setKeyword] = useState(initialKeyword);
   const [genreId, setGenreId] = useState('');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
@@ -27,15 +27,9 @@ function FilterBar({ onApply, initialKeyword = '' }) {
       .catch(() => {}); // ჟანრების ჩატვირთვის შეცდომა კრიტიკული არაა - ფილტრი უბრალოდ ამ ველის გარეშე იმუშავებს
   }, []);
 
-  // Navbar-იდან ახალი ძებნისას (initialKeyword იცვლება) input-იც განახლდეს
-  useEffect(() => {
-    setKeyword(initialKeyword);
-  }, [initialKeyword]);
-
   const handleApply = (e) => {
     e.preventDefault();
     onApply({
-      keyword: keyword.trim() || null,
       genreId: genreId || null,
       minPrice: minPrice || null,
       maxPrice: maxPrice || null,
@@ -44,29 +38,17 @@ function FilterBar({ onApply, initialKeyword = '' }) {
   };
 
   const handleReset = () => {
-    setKeyword('');
     setGenreId('');
     setMinPrice('');
     setMaxPrice('');
     setSortBy('newest');
-    onApply({ keyword: null, genreId: null, minPrice: null, maxPrice: null, sortBy: 'newest' });
+    onApply({ genreId: null, minPrice: null, maxPrice: null, sortBy: 'newest' });
   };
 
   return (
     <form onSubmit={handleApply} className="card card-body mb-4">
-      <div className="row g-3 align-items-end">
+      <div className="row g-3">
         <div className="col-md-3">
-          <label className="form-label small">საძიებო სიტყვა</label>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="სათაური ან ავტორი"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
-        </div>
-
-        <div className="col-md-2">
           <label className="form-label small">ჟანრი</label>
           <select
             className="form-select"
@@ -82,7 +64,7 @@ function FilterBar({ onApply, initialKeyword = '' }) {
           </select>
         </div>
 
-        <div className="col-md-2">
+        <div className="col-6 col-md-2">
           <label className="form-label small">ფასი, დან (₾)</label>
           <input
             type="number"
@@ -94,7 +76,7 @@ function FilterBar({ onApply, initialKeyword = '' }) {
           />
         </div>
 
-        <div className="col-md-2">
+        <div className="col-6 col-md-2">
           <label className="form-label small">ფასი, მდე (₾)</label>
           <input
             type="number"
@@ -120,15 +102,16 @@ function FilterBar({ onApply, initialKeyword = '' }) {
             ))}
           </select>
         </div>
+      </div>
 
-        <div className="col-md-2 d-flex gap-2">
-          <button type="submit" className="btn btn-primary flex-grow-1">
-            გაფილტვრა
-          </button>
-          <button type="button" className="btn btn-outline-secondary" onClick={handleReset}>
-            გასუფთავება
-          </button>
-        </div>
+      {/* ღილაკები ცალკე, სრულ სიგანეზე - ვიწრო სვეტში ტექსტი ჩარჩოდან გადიოდა */}
+      <div className="d-flex gap-2 mt-3">
+        <button type="submit" className="btn btn-primary">
+          გაფილტვრა
+        </button>
+        <button type="button" className="btn btn-outline-secondary" onClick={handleReset}>
+          გასუფთავება
+        </button>
       </div>
     </form>
   );

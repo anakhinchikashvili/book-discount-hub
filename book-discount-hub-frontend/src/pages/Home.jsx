@@ -12,17 +12,17 @@ function Home() {
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get('q');
 
-  // Navbar-ის საძიებო ველიდან ახალი keyword რომ მოვიდეს (URL შეიცვლება),
-  // საწყისი ფილტრი ამავე keyword-ით გაეშვას, დანარჩენი პარამეტრები default-ით
+  // keyword მხოლოდ URL-იდან (Navbar-ის ძებნა) მოდის - FilterBar-ს საკუთარი
+  // keyword-input აღარ აქვს, ამიტომ ის ყოველ ჯერზე ხელით ვურთავთ ფილტრის პარამეტრებს
   useEffect(() => {
-    runFilter({ keyword, genreId: null, minPrice: null, maxPrice: null, sortBy: 'newest' });
+    runFilter({ genreId: null, minPrice: null, maxPrice: null, sortBy: 'newest' });
   }, [keyword]);
 
-  const runFilter = async (filters) => {
+  const runFilter = async (filtersWithoutKeyword) => {
     setLoading(true);
     setError('');
     try {
-      const response = await filterBooks(filters);
+      const response = await filterBooks({ ...filtersWithoutKeyword, keyword: keyword || null });
       setBooks(response.data);
     } catch (err) {
       setError('წიგნების ჩატვირთვა ვერ მოხერხდა');
@@ -35,7 +35,7 @@ function Home() {
     <div className="container mt-4 mb-5">
       <h2 className="mb-4">{keyword ? `ძებნის შედეგები: "${keyword}"` : 'ყველა წიგნი'}</h2>
 
-      <FilterBar onApply={runFilter} initialKeyword={keyword || ''} />
+      <FilterBar onApply={runFilter} />
 
       {loading ? (
         <div className="text-center mt-5">

@@ -118,4 +118,24 @@ public class OrderService {
                 .map(OrderItemResponse::fromEntity)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Publisher-ს შეუძლია შეცვალოს მხოლოდ საკუთარი წიგნის OrderItem-ის სტატუსი -
+     * ownership-შემოწმება ისევე, როგორც BookService-ში წიგნის edit/delete-ზე.
+     */
+    @Transactional
+    public OrderItemResponse updateItemStatus(Long orderItemId, Long publisherUserId, OrderStatus newStatus) {
+        OrderItem item = orderItemRepository.findById(orderItemId)
+                .orElseThrow(() -> new EntityNotFoundException("შეკვეთის ერთეული ვერ მოიძებნა, id=" + orderItemId));
+
+        PublisherProfile profile = publisherProfileRepository.findByUserId(publisherUserId)
+                .orElseThrow(() -> new EntityNotFoundException("Publisher პროფილი ვერ მოიძებნა"));
+
+        if (!item.getBook().getPublisher().getId().equals(profile.getId())) {
+            throw new IllegalArgumentException("ეს შეკვეთის ერთეული არ ეკუთვნის თქვენს ანგარიშს");
+        }
+
+        item.setStatus(newStatus);
+        return OrderItemResponse.fromEntity(orderItemRepository.save(item));
+    }
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getMyBooks, createBook, updateBook, deleteBook } from '../api/bookService';
-import { getPublisherOrders } from '../api/orderService';
+import { getPublisherOrders, updateOrderItemStatus } from '../api/orderService';
 import { getAllGenres } from '../api/genreService';
 import BookForm from '../components/BookForm';
 
@@ -95,6 +95,15 @@ function PublisherDashboard() {
       await loadData();
     } catch (err) {
       setError(err.response?.data || 'შეცდომა წიგნის წაშლისას');
+    }
+  };
+
+  const handleStatusChange = async (orderItemId, newStatus) => {
+    try {
+      const res = await updateOrderItemStatus(orderItemId, newStatus);
+      setOrders((prev) => prev.map((item) => (item.id === orderItemId ? res.data : item)));
+    } catch (err) {
+      setError(err.response?.data || 'სტატუსის შეცვლა ვერ მოხერხდა');
     }
   };
 
@@ -212,16 +221,31 @@ function PublisherDashboard() {
                   <th>რაოდენობა</th>
                   <th>ფასი (შესყიდვისას)</th>
                   <th>ჯამი</th>
+                  <th>სტატუსი</th>
                 </tr>
               </thead>
               <tbody>
-                {orders.map((item, idx) => (
-                  <tr key={idx}>
+                {orders.map((item) => (
+                  <tr key={item.id}>
                     <td>{item.bookTitle}</td>
                     <td>{item.quantity}</td>
                     <td>{item.priceAtPurchase.toFixed(2)} ₾</td>
                     <td className="fw-bold">
                       {(item.priceAtPurchase * item.quantity).toFixed(2)} ₾
+                    </td>
+                    <td>
+                      <select
+                        className="form-select form-select-sm"
+                        style={{ width: '160px' }}
+                        value={item.status}
+                        onChange={(e) => handleStatusChange(item.id, e.target.value)}
+                      >
+                        <option value="PENDING">მიმდინარეობს დამუშავება</option>
+                        <option value="CONFIRMED">დადასტურებულია</option>
+                        <option value="SHIPPED">გზაშია</option>
+                        <option value="DELIVERED">მიწოდებულია</option>
+                        <option value="CANCELLED">გაუქმებულია</option>
+                      </select>
                     </td>
                   </tr>
                 ))}

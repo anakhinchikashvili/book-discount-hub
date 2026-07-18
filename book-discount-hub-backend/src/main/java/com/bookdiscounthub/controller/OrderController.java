@@ -3,6 +3,7 @@ package com.bookdiscounthub.controller;
 import com.bookdiscounthub.dto.OrderItemResponse;
 import com.bookdiscounthub.dto.OrderRequest;
 import com.bookdiscounthub.dto.OrderResponse;
+import com.bookdiscounthub.dto.UpdateOrderItemStatusRequest;
 import com.bookdiscounthub.security.CustomUserDetails;
 import com.bookdiscounthub.service.OrderService;
 import org.springframework.http.HttpStatus;
@@ -38,5 +39,14 @@ public class OrderController {
     @GetMapping("/publisher/my")
     public ResponseEntity<List<OrderItemResponse>> getPublisherOrders(@AuthenticationPrincipal CustomUserDetails principal) {
         return ResponseEntity.ok(orderService.getOrderItemsForPublisher(principal.getId()));
+    }
+
+    // Publisher-ს შეუძლია შეცვალოს მხოლოდ საკუთარი წიგნის item-ის სტატუსი
+    @PutMapping("/items/{orderItemId}/status")
+    public ResponseEntity<OrderItemResponse> updateItemStatus(@PathVariable Long orderItemId,
+                                                              @AuthenticationPrincipal CustomUserDetails principal,
+                                                              @RequestBody UpdateOrderItemStatusRequest request) {
+        return ResponseEntity.ok(
+                orderService.updateItemStatus(orderItemId, principal.getId(), request.getStatus()));
     }
 }

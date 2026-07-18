@@ -55,8 +55,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/orders").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/api/orders/my").hasRole("USER")
 
-                        // Publisher-ის საკუთარი გაყიდვების ნახვა - მხოლოდ PUBLISHER
+                        // Publisher-ის საკუთარი გაყიდვების ნახვა/მართვა - მხოლოდ PUBLISHER
                         .requestMatchers(HttpMethod.GET, "/api/orders/publisher/my").hasRole("PUBLISHER")
+                        .requestMatchers(HttpMethod.PUT, "/api/orders/items/**").hasRole("PUBLISHER")
 
                         // დანარჩენი ყველაფერი - უბრალოდ ავტორიზებული უნდა იყოს
                         .anyRequest().authenticated()

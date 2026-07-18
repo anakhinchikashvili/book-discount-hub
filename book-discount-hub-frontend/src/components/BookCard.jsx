@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
-/**
- * ერთი წიგნის ბარათი. კალათაში დამატება პირდაპირ CartContext-ს იყენებს.
- */
 function BookCard({ book }) {
   const { addToCart } = useCart();
+  const { isPublisher, isAdmin } = useAuth();
+  const isBuyer = !isPublisher && !isAdmin;
+
   const outOfStock = book.quantity === 0;
   const hasDiscount = book.discountPercentage > 0;
 
@@ -44,13 +45,19 @@ function BookCard({ book }) {
               <div className="mb-2 fw-bold">{book.finalPrice.toFixed(2)} ₾</div>
             )}
 
-            <button
-              className="btn btn-primary btn-sm w-100"
-              disabled={outOfStock}
-              onClick={() => addToCart(book)}
-            >
-              {outOfStock ? 'ამოწურულია' : 'კალათაში დამატება'}
-            </button>
+            {isBuyer ? (
+              <button
+                className="btn btn-primary btn-sm w-100"
+                disabled={outOfStock}
+                onClick={() => addToCart(book)}
+              >
+                {outOfStock ? 'ამოწურულია' : 'კალათაში დამატება'}
+              </button>
+            ) : (
+              <Link to={`/books/${book.id}`} className="btn btn-outline-primary btn-sm w-100">
+                დეტალურად ნახვა
+              </Link>
+            )}
           </div>
         </div>
       </div>
