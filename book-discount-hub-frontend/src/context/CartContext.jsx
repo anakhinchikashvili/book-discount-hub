@@ -1,18 +1,34 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext(null);
 
-const STORAGE_KEY = 'cart';
+// user-სპეციფიკური key - Wishlist-ის იგივე პატერნი, სხვადასხვა მომხმარებელს
+// (ან სტუმარს) ცალკე კალათა ჰქონდეს იმავე ბრაუზერში
+function getStorageKey(userId) {
+  return `cart_${userId ?? 'guest'}`;
+}
+
+function loadFromStorage(key) {
+  const stored = localStorage.getItem(key);
+  return stored ? JSON.parse(stored) : [];
+}
 
 export function CartProvider({ children }) {
-  const [items, setItems] = useState(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  });
+  const { user } = useAuth();
+  const storageKey = getStorageKey(user?.userId);
+
+  const [items, setItems] = useState(() => loadFromStorage(storageKey));
+
+  // storageKey იცვლება login/logout-ზე - ახალი user-ის (ან guest-ის) საკუთარი
+  // კალათა ხელახლა იტვირთება, წინას items აღარ გადმოჰყვება state-ს
+  useEffect(() => {
+    setItems(loadFromStorage(storageKey));
+  }, [storageKey]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }, [items]);
+    localStorage.setItem(storageKey, JSON.stringify(items));
+  }, [items, storageKey]);
 
   // book - BookResponse ობიექტი bookService-იდან (id, title, finalPrice, quantity=stock და ა.შ.)
   const addToCart = (book, qty = 1) => {

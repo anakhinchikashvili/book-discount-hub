@@ -9,8 +9,7 @@ import { useWishlist } from '../context/WishlistContext';
  */
 function Navbar() {
   const { isAuthenticated, isPublisher, isAdmin, user, logout } = useAuth();
-  const { itemCount, clearCart } = useCart();
-  const { clearWishlist } = useWishlist(); 
+  const { itemCount } = useCart();
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
@@ -26,8 +25,6 @@ function Navbar() {
 
   const handleLogout = () => {
     logout();
-    clearCart(); 
-    clearWishlist(); 
     setSearchTerm('');
     navigate('/');
   };

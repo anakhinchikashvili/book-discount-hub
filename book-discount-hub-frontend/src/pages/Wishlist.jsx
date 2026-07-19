@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 
 function Wishlist() {
-  const { items, toggleWishlist } = useWishlist();
+  const { items, refreshRestocks, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
+
+  // ეშვება კომპონენტის ეკრანზე გამოჩენისას (mount-ზე) მარაგების გადასამოწმებლად
+  useEffect(() => {
+    refreshRestocks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (items.length === 0) {
     return (

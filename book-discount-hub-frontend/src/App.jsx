@@ -10,12 +10,14 @@ import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import BookDetail from './pages/BookDetail'; 
 import Wishlist from './pages/Wishlist';
+import RestockToast from './components/RestockToast';
 
 
 function App() {
   return (
     <BrowserRouter>
       <Navbar />
+      <RestockToast /> 
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
