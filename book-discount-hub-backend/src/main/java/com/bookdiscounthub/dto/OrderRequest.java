@@ -9,5 +9,6 @@ import java.util.List;
 @Setter
 public class OrderRequest {
     private String shippingAddress;
+    private String phoneNumber;
     private List<OrderItemRequest> items; // შეიძლება შეიცავდეს სხვადასხვა publisher-ის წიგნებს
 }

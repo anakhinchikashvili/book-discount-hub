@@ -28,10 +28,23 @@ public class Order {
     @Column(nullable = false)
     private String shippingAddress;
 
+    @Column(nullable = false)
+    private String phoneNumber;
+
+    /**
+     * მიწოდების საფასური - ითვლება OrderService-ში checkout-ის დროს
+     * (თბილისში უფასო, სხვაგან ფიქსირებული 10 ₾), ინახება მშობელ Order-ზე,
+     * არა თითოეულ OrderItem-ზე - ეს არის საერთო ლოჯისტიკური ხარჯი, არა
+     * კონკრეტული Publisher-ის წიგნის ღირებულების ნაწილი.
+     */
+    @Column(nullable = false)
+    private BigDecimal shippingFee = BigDecimal.ZERO;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status = OrderStatus.PENDING;
 
+    // items-ის ჯამი + shippingFee
     @Column(nullable = false)
     private BigDecimal totalPrice;
 

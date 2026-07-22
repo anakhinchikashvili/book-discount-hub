@@ -43,6 +43,9 @@ public class OrderService {
         this.publisherProfileRepository = publisherProfileRepository;
     }
 
+    private static final BigDecimal TBILISI_SHIPPING_FEE = BigDecimal.ZERO;
+    private static final BigDecimal REGIONAL_SHIPPING_FEE = BigDecimal.valueOf(10.00);
+
     /**
      * Cross-Vendor Checkout: request.items შეიძლება შეიცავდეს სხვადასხვა
      * publisher-ის წიგნებს - ერთი Order, მაგრამ თითო წიგნი ცალკე OrderItem-ია,
@@ -61,14 +64,24 @@ public class OrderService {
         if (request.getItems() == null || request.getItems().isEmpty()) {
             throw new IllegalArgumentException("კალათა ცარიელია");
         }
+        if (request.getShippingAddress() == null || request.getShippingAddress().isBlank()) {
+            throw new IllegalArgumentException("მისამართი სავალდებულოა");
+        }
+        if (request.getPhoneNumber() == null || request.getPhoneNumber().isBlank()) {
+            throw new IllegalArgumentException("ტელეფონის ნომერი სავალდებულოა");
+        }
+
+        BigDecimal shippingFee = calculateShippingFee(request.getShippingAddress());
 
         Order order = new Order();
         order.setUser(user);
         order.setShippingAddress(request.getShippingAddress());
+        order.setPhoneNumber(request.getPhoneNumber());
+        order.setShippingFee(shippingFee);
         order.setStatus(OrderStatus.PENDING);
 
         List<OrderItem> orderItems = new ArrayList<>();
-        BigDecimal totalPrice = BigDecimal.ZERO;
+        BigDecimal itemsTotal = BigDecimal.ZERO;
 
         for (OrderItemRequest itemRequest : request.getItems()) {
             Book book = bookRepository.findById(itemRequest.getBookId())
@@ -87,7 +100,7 @@ public class OrderService {
             orderItem.setPriceAtPurchase(priceAtPurchase);
             orderItems.add(orderItem);
 
-            totalPrice = totalPrice.add(priceAtPurchase.multiply(BigDecimal.valueOf(itemRequest.getQuantity())));
+            itemsTotal = itemsTotal.add(priceAtPurchase.multiply(BigDecimal.valueOf(itemRequest.getQuantity())));
 
             // მარაგის შემცირება - თუ არასაკმარისია, აქ IllegalArgumentException-ს ისვრის
             // BookService, და მთელი @Transactional მეთოდი rollback-დება
@@ -95,10 +108,21 @@ public class OrderService {
         }
 
         order.setItems(orderItems);
-        order.setTotalPrice(totalPrice);
+        order.setTotalPrice(itemsTotal.add(shippingFee));
 
         Order savedOrder = orderRepository.save(order);
         return OrderResponse.fromEntity(savedOrder);
+    }
+
+    /**
+     * თბილისში მიწოდება უფასოა, სხვაგან - ფიქსირებული 10 ₾.
+     * "თბილისი"-ს ძებნა case-insensitive-ია, რომ "თბილისი", "თბილისში",
+     * "Tbilisi" და ა.შ. ყველა სწორად აღიქმებოდეს.
+     */
+    private BigDecimal calculateShippingFee(String shippingAddress) {
+        return shippingAddress.toLowerCase().contains("თბილისი")
+                ? TBILISI_SHIPPING_FEE
+                : REGIONAL_SHIPPING_FEE;
     }
 
     public List<OrderResponse> getOrdersByUser(Long userId) {

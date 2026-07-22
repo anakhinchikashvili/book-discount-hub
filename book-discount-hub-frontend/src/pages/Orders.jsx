@@ -72,7 +72,9 @@ function Orders() {
           </div>
 
           <div className="card-body">
-            <p className="text-muted small mb-3">მისამართი: {order.shippingAddress}</p>
+            <p className="text-muted small mb-3">
+              მისამართი: {order.shippingAddress} · ტელეფონი: {order.phoneNumber}
+            </p>
 
             {order.items.map((item) => {
               const status = STATUS_LABELS[item.status] || { text: item.status, className: 'bg-secondary' };
@@ -95,9 +97,15 @@ function Orders() {
               );
             })}
 
-            <div className="d-flex justify-content-between mt-3 fw-bold fs-5">
-              <span>ჯამი:</span>
-              <span>{order.totalPrice.toFixed(2)} ₾</span>
+            <div className="mt-3">
+              <div className="d-flex justify-content-between text-muted small">
+                <span>მიწოდება:</span>
+                <span>{order.shippingFee.toFixed(2)} ₾</span>
+              </div>
+              <div className="d-flex justify-content-between fw-bold fs-5">
+                <span>ჯამი:</span>
+                <span>{order.totalPrice.toFixed(2)} ₾</span>
+              </div>
             </div>
           </div>
         </div>

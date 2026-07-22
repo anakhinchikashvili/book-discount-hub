@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { placeOrder } from '../api/orderService';
+
+const REGIONAL_SHIPPING_FEE = 10;
+const PHONE_PATTERN = /^5\d{8}$/; // ქართული მობილური: 9 ციფრი, 5-ით დაწყებული
 
 function Cart() {
   const { items, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart();
@@ -10,8 +13,19 @@ function Cart() {
   const navigate = useNavigate();
 
   const [shippingAddress, setShippingAddress] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const isPhoneValid = phoneNumber === '' || PHONE_PATTERN.test(phoneNumber);
+
+  // frontend-ის მხარეს გამოთვლილი მიწოდების საფასურის preview - ეს მხოლოდ
+  // UX-ისთვისაა (მომხმარებელი მაშინვე ხედავს); რეალურ, საბოლოო თანხას
+  // ბექენდი ხელახლა ითვლის checkout-ის მომენტში (იგივე ლოგიკით), ასე რომ
+  // frontend-ის გამოთვლაზე ვერასდროს "ვენდობით" ბრმად ფინანსური თვალსაზრისით.
+  const isTbilisi = shippingAddress.toLowerCase().includes('თბილისი');
+  const shippingFee = shippingAddress.trim() === '' ? 0 : isTbilisi ? 0 : REGIONAL_SHIPPING_FEE;
+  const grandTotal = useMemo(() => totalPrice + shippingFee, [totalPrice, shippingFee]);
 
   const handleCheckout = async (e) => {
     e.preventDefault();
@@ -23,10 +37,20 @@ function Cart() {
       return;
     }
 
+    if (!shippingAddress.trim() || !phoneNumber.trim()) {
+      setError('მისამართი და ტელეფონის ნომერი სავალდებულოა');
+      return;
+    }
+
+    if (!PHONE_PATTERN.test(phoneNumber)) {
+      setError('ტელეფონის ნომერი უნდა შედგებოდეს 9 ციფრისგან და იწყებოდეს 5-ით (მაგ. 599123456)');
+      return;
+    }
+
     setLoading(true);
     try {
       const orderItems = items.map((item) => ({ bookId: item.bookId, quantity: item.quantity }));
-      await placeOrder(shippingAddress, orderItems);
+      await placeOrder(shippingAddress, phoneNumber, orderItems);
       clearCart();
       navigate('/orders', { state: { message: 'შეკვეთა წარმატებით გაფორმდა!' } });
     } catch (err) {
@@ -93,26 +117,66 @@ function Cart() {
 
       <div className="card">
         <div className="card-body">
-          <h5 className="d-flex justify-content-between">
-            <span>ჯამი:</span>
-            <span>{totalPrice.toFixed(2)} ₾</span>
-          </h5>
+          {error && <div className="alert alert-danger">{error}</div>}
 
-          {error && <div className="alert alert-danger mt-3">{error}</div>}
-
-          <form onSubmit={handleCheckout} className="mt-3">
+          <form onSubmit={handleCheckout}>
             <div className="mb-3">
               <label className="form-label">მიტანის მისამართი</label>
               <input
                 type="text"
                 className="form-control"
+                placeholder="მაგ. თბილისი, ვაჟა-ფშაველას გამზ. 10"
                 value={shippingAddress}
                 onChange={(e) => setShippingAddress(e.target.value)}
                 required
               />
             </div>
 
-            <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+            <div className="mb-3">
+              <label className="form-label">ტელეფონის ნომერი</label>
+              <input
+                type="tel"
+                className={`form-control ${phoneNumber && !isPhoneValid ? 'is-invalid' : ''}`}
+                placeholder="599XXXXXX"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                required
+              />
+              {phoneNumber && !isPhoneValid && (
+                <div className="invalid-feedback">
+                  ნომერი უნდა შედგებოდეს ზუსტად 9 ციფრისგან და იწყებოდეს 5-ით
+                </div>
+              )}
+            </div>
+
+            {shippingAddress.trim() !== '' && (
+              <div className={`alert ${isTbilisi ? 'alert-success' : 'alert-info'} py-2`}>
+                {isTbilisi
+                  ? 'მიწოდება: უფასო (0 ₾)'
+                  : `მიწოდება (რეგიონი): ${REGIONAL_SHIPPING_FEE} ₾`}
+              </div>
+            )}
+
+            <div className="border-top pt-3 mt-3">
+              <div className="d-flex justify-content-between text-muted">
+                <span>წიგნების ჯამი:</span>
+                <span>{totalPrice.toFixed(2)} ₾</span>
+              </div>
+              <div className="d-flex justify-content-between text-muted">
+                <span>მიწოდება:</span>
+                <span>{shippingFee.toFixed(2)} ₾</span>
+              </div>
+              <div className="d-flex justify-content-between fw-bold fs-5 mt-2">
+                <span>სულ გადასახდელი:</span>
+                <span>{grandTotal.toFixed(2)} ₾</span>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-primary w-100 mt-3"
+              disabled={loading || !isPhoneValid || phoneNumber.length !== 9}
+            >
               {loading ? 'ფორმდება...' : 'შეკვეთის გაფორმება'}
             </button>
           </form>

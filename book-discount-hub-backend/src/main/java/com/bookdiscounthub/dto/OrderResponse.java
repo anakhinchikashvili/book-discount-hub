@@ -17,6 +17,8 @@ public class OrderResponse {
     private OrderStatus status;
     private BigDecimal totalPrice;
     private String shippingAddress;
+    private String phoneNumber;
+    private BigDecimal shippingFee;
     private LocalDateTime orderDate;
     private List<OrderItemResponse> items;
 
@@ -26,6 +28,8 @@ public class OrderResponse {
         dto.setStatus(order.getStatus());
         dto.setTotalPrice(order.getTotalPrice());
         dto.setShippingAddress(order.getShippingAddress());
+        dto.setPhoneNumber(order.getPhoneNumber());
+        dto.setShippingFee(order.getShippingFee());
         dto.setOrderDate(order.getOrderDate());
         dto.setItems(order.getItems().stream()
                 .map(OrderItemResponse::fromEntity)

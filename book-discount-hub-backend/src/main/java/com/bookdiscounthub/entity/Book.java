@@ -21,10 +21,10 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String author;
 
     @Column(length = 2000)
@@ -64,6 +64,17 @@ public class Book {
 
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    /**
+     * Optimistic Locking: ორი ერთდროული ტრანზაქცია რომ ცდილობდეს ერთი და იმავე
+     * წიგნის quantity-ის შემცირებას (Race Condition/TOCTOU სცენარი, მაგ. ბოლო
+     * ცალის ერთდროული ყიდვა ორი მომხმარებლის მიერ), Hibernate ავტომატურად
+     * ადარებს version-ს commit-ის მომენტში. თუ სხვამ იქამდე უკვე შეცვალა row,
+     * მეორე ტრანზაქცია ObjectOptimisticLockingFailureException-ს მიიღებს
+     * (დაჭერილია GlobalExceptionHandler-ში), rollback-ის ნაცვლად overselling-ისა.
+     */
+    @Version
+    private Long version;
 
     /**
      * გამოთვლადი ველი: ფასდაკლებიანი საბოლოო ფასი.

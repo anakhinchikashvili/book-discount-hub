@@ -1,6 +1,7 @@
 package com.bookdiscounthub.controller;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,5 +25,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<String> handleNotFound(EntityNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    /**
+     * Book.version-ის @Version-ით დაცული Optimistic Locking conflict - ორმა
+     * ერთდროულმა ტრანზაქციამ სცადა იმავე წიგნის row-ს განახლება. 409 Conflict
+     * (არა 400/500), რომ frontend-მა შეძლოს ცალკე დაიჭიროს და "სცადეთ თავიდან"
+     * ლოგიკა/retry შესთავაზოს მომხმარებელს.
+     */
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<String> handleOptimisticLock(OptimisticLockingFailureException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body("მარაგი ამ დროს სხვამ განაახლა - გთხოვთ, სცადოთ შეკვეთის გაფორმება თავიდან");
     }
 }

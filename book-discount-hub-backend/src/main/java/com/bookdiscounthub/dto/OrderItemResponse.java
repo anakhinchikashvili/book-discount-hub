@@ -17,8 +17,12 @@ public class OrderItemResponse {
     private Integer quantity;
     private BigDecimal priceAtPurchase;
     private OrderStatus status;
+
+    // მყიდველის მონაცემები, ლოჯისტიკური მიზნით - Publisher-ს რომ შეეძლოს რეალურად გაგზავნა.
+    // ეს ველები Order-იდან (მშობელი) მოდის, არა OrderItem-იდან.
+    private String buyerFullName;
     private String shippingAddress;
-    private String buyerName;
+    private String phoneNumber;
 
     public static OrderItemResponse fromEntity(OrderItem item) {
         OrderItemResponse dto = new OrderItemResponse();
@@ -29,8 +33,9 @@ public class OrderItemResponse {
         dto.setQuantity(item.getQuantity());
         dto.setPriceAtPurchase(item.getPriceAtPurchase());
         dto.setStatus(item.getStatus());
+        dto.setBuyerFullName(item.getOrder().getUser().getFullName());
         dto.setShippingAddress(item.getOrder().getShippingAddress());
-        dto.setBuyerName(item.getOrder().getUser().getFullName());
+        dto.setPhoneNumber(item.getOrder().getPhoneNumber());
         return dto;
     }
 }
